@@ -125,7 +125,7 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 		//Если нужный год существует
 		if ($yearId){
 			//Проставим году нужные параметры
-			ddTools::udateDocument($yearId, array(
+			ddTools::updateDocument($yearId, array(
 				'isfolder' => 1,
 				'template' => $ddYearTpl,
 				'published' => $ddYearPub
@@ -155,7 +155,7 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 		//Если нужный месяц существует
 		if ($monthId){
 			//Проставим месяцу нужные параметры
-			ddTools::udateDocument($monthId, array(
+			ddTools::updateDocument($monthId, array(
 				'isfolder' => 1,
 				'template' => $ddMonthTpl,
 				'published' => $ddMonthPub
