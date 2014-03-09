@@ -110,20 +110,19 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 		//Получаем список групп документов, к которым принадлежит текущий документ (пригодится при создании годов и месяцев)
 		$docGroups = preg_replace('/,\d*/', '', $document_groups);
 		
-		//Получаем псевдоним корневого родителя
-		$ultimateAlias = '';
-		//Если корневой родитель не в корне, допишем путь к нему
-		if ($modx->aliasListing[$ddParent]['path'] != '') $ultimateAlias .= $modx->aliasListing[$ddParent]['path'].'/';
-		$ultimateAlias .= $modx->aliasListing[$ddParent]['alias'];
+		$yearId = 0;
+		$monthId = 0;
 		
 		//Получаем годы (непосредственных детей корневого родителя)
-		$years = $modx->getChildIds($ddParent, 1);
+		$years = ddTools::getDocumentChildrenTVarOutput($ddParent, array('id'), false, 'menuindex', 'ASC', '', 'alias');
 		
-		//Получаем id нужного нам года
-		$yearId = $years[$ultimateAlias.'/'.$ddDate['y']];
+		if (isset($years[$ddDate['y']])){
+			//Получаем id нужного нам года
+			$yearId = $years[$ddDate['y']]['id'];
+		}
 		
 		//Если нужный год существует
-		if ($yearId){
+		if ($yearId != 0){
 			//Проставим году нужные параметры
 			ddTools::updateDocument($yearId, array(
 				'isfolder' => 1,
@@ -131,9 +130,11 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 				'published' => $ddYearPub
 			));
 			//Получаем месяцы (непосредственных детей текущего года)
-			$months = $modx->getChildIds($yearId, 1);
-			//Получаем id нужного нам месяца
-			$monthId = $months[$ultimateAlias.'/'.$ddDate['y'].'/'.$ddDate['m']];
+			$months = ddTools::getDocumentChildrenTVarOutput($yearId, array('id'), false, 'menuindex', 'ASC', '', 'alias');
+			if (isset($months[$ddDate['m']])){
+				//Получаем id нужного нам месяца
+				$monthId = $months[$ddDate['m']]['id'];
+			}
 		//Если нужный год не существует
 		}else{
 			//Создадим его
@@ -153,7 +154,7 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 		
 // 		if (!$monthId && $yearId){
 		//Если нужный месяц существует
-		if ($monthId){
+		if ($monthId != 0){
 			//Проставим месяцу нужные параметры
 			ddTools::updateDocument($monthId, array(
 				'isfolder' => 1,
