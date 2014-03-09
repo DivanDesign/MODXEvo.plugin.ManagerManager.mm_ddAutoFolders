@@ -7,14 +7,14 @@
  * 
  * @uses ManagerManager plugin 0.5
  * 
- * @param $ddRoles {comma separated string} - List of role IDs this should be applied to. Leave empty (or omit) for all roles. Default: ''.
- * @param $ddTemplates {comma separated string} - List of template IDs this should be applied to. Leave empty (or omit) for all templates. Default: ''.
- * @param $ddParent {integer} - Ultimate parent ID (parent of the years). @required
- * @param $ddDateSource {string} - Name of template variable which contains the date. Default: 'pub_date'.
- * @param $ddYearTpl {integer} - Template ID for documents of year. Default: 0.
- * @param $ddMonthTpl {integer} - Template ID for documents of month. Default: 0.
- * @param $ddYearPub {0; 1} - Would the documents of year published? Default: 0.
- * @param $ddMonthPub {0; 1} - Would the documents of month published? Default: 0.
+ * @param $roles {comma separated string} - List of role IDs this should be applied to. Leave empty (or omit) for all roles. Default: ''.
+ * @param $templates {comma separated string} - List of template IDs this should be applied to. Leave empty (or omit) for all templates. Default: ''.
+ * @param $yearsParent {integer} - Ultimate parent ID (parent of the years). @required
+ * @param $dateSource {string} - Name of template variable which contains the date. Default: 'pub_date'.
+ * @param $yearTpl {integer} - Template ID for documents of year. Default: 0.
+ * @param $monthTpl {integer} - Template ID for documents of month. Default: 0.
+ * @param $yearPublished {0; 1} - Would the documents of year published? Default: 0.
+ * @param $monthPublished {0; 1} - Would the documents of month published? Default: 0.
  * 
  * @link http://code.divandesign.biz/modx/mm_ddautofolders/1.0.2
  * 
@@ -22,35 +22,12 @@
  * http://www.DivanDesign.biz
  */
 
-/**
- * mm_ddAutoFolders
- * @version 1.0.2 (2013-05-30)
- * 
- * @desc При сохранении (событие OnBeforeDocFormSave) автоматически перемещает необходимый документ, основываясь на его дате (дата публикации, или любая дата в tv) в папку года и месяца. Если папки (документы) года и/или месяца ещё не созданы, они создадутся автоматически.
- * 
- * @uses ManagerManager plugin 0.5
- * 
- * @param $ddRoles {comma separated string} - ID ролей, к которым необходимо применить правило. Default: ''.
- * @param $ddTemplates {comma separated string} - ID шаблонов, к которым необходимо применить правило. Default: ''.
- * @param $ddParent {integer} - ID корневого родителя. @required
- * @param $ddDateSource {string} - Поле, откуда необходимо брать дату. Default: 'pub_date'.
- * @param $ddYearTpl {integer} - ID шаблона, который необходимо выставлять документам-годам. Default: 0.
- * @param $ddMonthTpl {integer} - ID шаблона, который необходимо выставлять документам-месяцам. Default: 0.
- * @param $ddYearPub {0; 1} - Надо ли публиковать документы-годы. Default: 0.
- * @param $ddMonthPub {0; 1} - Надо ли публиковать документы-месяцы. Default: 0.
- * 
- * @link http://code.divandesign.ru/modx/mm_ddautofolders/1.0.2
- * 
- * @copyright 2013, DivanDesign
- * http://www.DivanDesign.ru
- */
-
-function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddDateSource = 'pub_date', $ddYearTpl = 0, $ddMonthTpl = 0, $ddYearPub = '0', $ddMonthPub = '0'){
-	global $modx, $id, $pub_date, $parent, $template, $document_groups, $tmplvars, $mm_fields, $modx_lang_attribute;
+function mm_ddAutoFolders($roles = '', $templates = '', $yearsParent = '', $dateSource = 'pub_date', $yearTpl = 0, $monthTpl = 0, $yearPublished = '0', $monthPublished = '0'){
+	global $modx, $pub_date, $parent, $template, $document_groups, $tmplvars, $modx_lang_attribute;
 	$e = &$modx->Event;
 	
-	//$ddParent is required
-	if (is_numeric($ddParent) && $e->name == 'OnBeforeDocFormSave' && useThisRule($ddRoles, $ddTemplates)){
+	//$yearsParent is required
+	if (is_numeric($yearsParent) && $e->name == 'OnBeforeDocFormSave' && useThisRule($roles, $templates)){
 		$base_path = $modx->config['base_path'];
 		$widgetDir = $base_path.'assets/plugins/managermanager/widgets/ddautofolders/';
 		
@@ -64,9 +41,9 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 		$ddDate = array();
 		
 		//Если задано, откуда брать дату и это не дата публикации, пытаемся найти в tv`шках
-		if ($ddDateSource && $ddDateSource != 'pub_date'){
+		if ($dateSource && $dateSource != 'pub_date'){
 			//Получаем tv с датой для данного шаблона
-			$dateTv = tplUseTvs($template, $ddDateSource);
+			$dateTv = tplUseTvs($template, $dateSource);
 			
 			//Если tv удалось получить, такая tv есть и есть её значение
 			if ($dateTv && $dateTv[0]['id'] && $tmplvars[$dateTv[0]['id']] && $tmplvars[$dateTv[0]['id']][1]){
@@ -114,7 +91,7 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 		$monthId = 0;
 		
 		//Получаем годы (непосредственных детей корневого родителя)
-		$years = ddTools::getDocumentChildrenTVarOutput($ddParent, array('id'), false, 'menuindex', 'ASC', '', 'alias');
+		$years = ddTools::getDocumentChildrenTVarOutput($yearsParent, array('id'), false, 'menuindex', 'ASC', '', 'alias');
 		
 		if (isset($years[$ddDate['y']])){
 			//Получаем id нужного нам года
@@ -126,8 +103,8 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 			//Проставим году нужные параметры
 			ddTools::updateDocument($yearId, array(
 				'isfolder' => 1,
-				'template' => $ddYearTpl,
-				'published' => $ddYearPub
+				'template' => $yearTpl,
+				'published' => $yearPublished
 			));
 			//Получаем месяцы (непосредственных детей текущего года)
 			$months = ddTools::getDocumentChildrenTVarOutput($yearId, array('id'), false, 'menuindex', 'ASC', '', 'alias');
@@ -141,14 +118,14 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 			$yearId = ddTools::createDocument(array(
 				'pagetitle' => $ddDate['y'],
 				'alias' => $ddDate['y'],
-				'parent' => $ddParent,
+				'parent' => $yearsParent,
 				'isfolder' => 1,
-				'template' => $ddYearTpl,
+				'template' => $yearTpl,
 				//Года запихиваем тупо в самый конец
 // 				'menuindex' => count($years),
 				//Да пусть будут тупо по году, сортироваться нормально зато будут
 				'menuindex' => $ddDate['y'] - 2000,
-				'published' => $ddYearPub
+				'published' => $yearPublished
 			), $docGroups);
 		}
 		
@@ -158,8 +135,8 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 			//Проставим месяцу нужные параметры
 			ddTools::updateDocument($monthId, array(
 				'isfolder' => 1,
-				'template' => $ddMonthTpl,
-				'published' => $ddMonthPub
+				'template' => $monthTpl,
+				'published' => $monthPublished
 			));
 			//Если нужный месяц не существует (на всякий случай проверим ещё и год)
 		}else if($yearId){
@@ -168,10 +145,10 @@ function mm_ddAutoFolders($ddRoles = '', $ddTemplates = '', $ddParent = '', $ddD
 				'alias' => $ddDate['m'],
 				'parent' => $yearId,
 				'isfolder' => 1,
-				'template' => $ddMonthTpl,
+				'template' => $monthTpl,
 				//Для месяца выставляем menuindex в соответствии с его порядковым номером
 				'menuindex' => $ddDate['n'] - 1,
-				'published' => $ddMonthPub
+				'published' => $monthPublished
 			), $docGroups);
 		}
 		
