@@ -15,6 +15,7 @@
  * @param $monthTpl {integer} - Template ID for documents of month. Default: 0.
  * @param $yearPublished {0; 1} - Would the documents of year published? Default: 0.
  * @param $monthPublished {0; 1} - Would the documents of month published? Default: 0.
+ * @param $numericMonth {boolean} - Numeric aliases for month documents. Default: false.
  * 
  * @link http://code.divandesign.biz/modx/mm_ddautofolders/1.0.2
  * 
@@ -22,7 +23,7 @@
  * http://www.DivanDesign.biz
  */
 
-function mm_ddAutoFolders($roles = '', $templates = '', $yearsParent = '', $dateSource = 'pub_date', $yearTpl = 0, $monthTpl = 0, $yearPublished = '0', $monthPublished = '0'){
+function mm_ddAutoFolders($roles = '', $templates = '', $yearsParent = '', $dateSource = 'pub_date', $yearTpl = 0, $monthTpl = 0, $yearPublished = '0', $monthPublished = '0', $numericMonth = false){
 	global $modx, $pub_date, $parent, $template, $document_groups, $tmplvars, $modx_lang_attribute;
 	$e = &$modx->Event;
 	
@@ -67,8 +68,8 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParent = '', $date
 		//Псевдонимы родителей (какие должны быть)
 		//Год в формате 4 цифры
 		$ddDate['y'] = date('Y', $ddDate['date']);
-		//Название месяца на английском
-		$ddDate['m'] = strtolower(date('F', $ddDate['date']));
+		//Псевдоним месяца (порядковый номер номер с ведущим нолём или название на английском)
+		$ddDate['m'] = $numericMonth ? date('m', $ddDate['date']) : strtolower(date('F', $ddDate['date']));
 		//Порядковый номер месяца
 		$ddDate['n'] = date('n', $ddDate['date']);
 		
