@@ -29,11 +29,10 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParent = '', $date
 	
 	//$yearsParent is required
 	if (is_numeric($yearsParent) && $e->name == 'OnBeforeDocFormSave' && useThisRule($roles, $templates)){
-		$base_path = $modx->config['base_path'];
-		$widgetDir = $base_path.'assets/plugins/managermanager/widgets/ddautofolders/';
+		$allParents = $modx->getParentIds(is_numeric($e->params['id']) ? $e->params['id'] : $parent);
 		
-		//Подключаем библиотеку ddTools
-// 		require_once $widgetDir.'modx.ddtools.class.php';
+		//Если текущий документ не относится к переданному родителю (или его родитель, если это новый документ), то делать ничего не нужно
+		if (!isset($allParents[$yearsParent])){return;}
 		
 		//Текущее правило
 		$rule = array();
