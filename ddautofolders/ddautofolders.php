@@ -1,7 +1,7 @@
 <?php
 /**
  * mm_ddAutoFolders
- * @version 1.0.2 (2013-05-30)
+ * @version 1.1 (2014-03-10)
  * 
  * @desc Automatically move documents (OnBeforeDocFormSave event) based on their date (publication date; any date in tv) into folders of year and month (like 2012/02/). If folders (documents) of year and month doesn`t exist they are created automatically OnBeforeDocFormSave event.
  * 
@@ -17,9 +17,9 @@
  * @param $monthPublished {0; 1} - Would the documents of month published? Default: 0.
  * @param $numericMonth {boolean} - Numeric aliases for month documents. Default: false.
  * 
- * @link http://code.divandesign.biz/modx/mm_ddautofolders/1.0.2
+ * @link http://code.divandesign.biz/modx/mm_ddautofolders/1.1
  * 
- * @copyright 2013, DivanDesign
+ * @copyright 2014, DivanDesign
  * http://www.DivanDesign.biz
  */
 
@@ -53,7 +53,6 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dat
 		
 		//Текущее правило
 		$rule = array();
-		
 		//Дата
 		$ddDate = array();
 		
@@ -72,14 +71,16 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dat
 					$ddDate['date'] = strtotime($tmplvars[$dateTv[0]['id']][1]);
 				}
 				//Пытаемся преобразовать в unix-время
-				if (!is_numeric($tmplvars[$dateTv[0]['id']][1])) $ddDate['date'] = strtotime($tmplvars[$dateTv[0]['id']][1]);
+				if (!is_numeric($tmplvars[$dateTv[0]['id']][1])){
+					$ddDate['date'] = strtotime($tmplvars[$dateTv[0]['id']][1]);
+				}
 			}
 		}else{
 			$ddDate['date'] = $pub_date;
 		}
 		
 		//Если не задана дата, выбрасываем
-		if (!$ddDate['date']) return;
+		if (!$ddDate['date']){return;}
 		
 		//Псевдонимы родителей (какие должны быть)
 		//Год в формате 4 цифры
@@ -146,7 +147,6 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dat
 			), $docGroups);
 		}
 		
-// 		if (!$monthId && $yearId){
 		//Если нужный месяц существует
 		if ($monthId != 0){
 			//Проставим месяцу нужные параметры
@@ -170,7 +170,9 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dat
 		}
 		
 		//Ещё раз на всякий случай проверим, что с месяцем всё хорошо
-		if ($monthId && $monthId != $parent) $parent = $monthId;
+		if ($monthId && $monthId != $parent){
+			$parent = $monthId;
+		}
 	}
 }
 ?>
