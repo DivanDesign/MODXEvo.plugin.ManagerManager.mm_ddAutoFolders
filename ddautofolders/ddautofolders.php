@@ -9,7 +9,7 @@
  * 
  * @param $roles {comma separated string} - List of role IDs this should be applied to. Leave empty (or omit) for all roles. Default: ''.
  * @param $templates {comma separated string} - List of template IDs this should be applied to. Leave empty (or omit) for all templates. Default: ''.
- * @param $yearsParent {integer} - Ultimate parent ID (parent of the years). @required
+ * @param $yearsParents {comma separated string} - IDs of ultimate parents (parents of the years). @required
  * @param $dateSource {string} - Name of template variable which contains the date. Default: 'pub_date'.
  * @param $yearTpl {integer} - Template ID for documents of year. Default: 0.
  * @param $monthTpl {integer} - Template ID for documents of month. Default: 0.
@@ -23,16 +23,33 @@
  * http://www.DivanDesign.biz
  */
 
-function mm_ddAutoFolders($roles = '', $templates = '', $yearsParent = '', $dateSource = 'pub_date', $yearTpl = 0, $monthTpl = 0, $yearPublished = '0', $monthPublished = '0', $numericMonth = false){
+function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dateSource = 'pub_date', $yearTpl = 0, $monthTpl = 0, $yearPublished = '0', $monthPublished = '0', $numericMonth = false){
 	global $modx, $pub_date, $parent, $template, $document_groups, $tmplvars, $modx_lang_attribute;
 	$e = &$modx->Event;
 	
-	//$yearsParent is required
-	if (is_numeric($yearsParent) && $e->name == 'OnBeforeDocFormSave' && useThisRule($roles, $templates)){
+	//$yearsParents is required
+	if ($yearsParents != '' && $e->name == 'OnBeforeDocFormSave' && useThisRule($roles, $templates)){
+		//Получаем всех родителей текущего документа (или его родителя, если это новый документ)
 		$allParents = $modx->getParentIds(is_numeric($e->params['id']) ? $e->params['id'] : $parent);
 		
-		//Если текущий документ не относится к переданному родителю (или его родитель, если это новый документ), то делать ничего не нужно
-		if (!isset($allParents[$yearsParent])){return;}
+		$yearsParents = makeArray($yearsParents);
+		
+		//Перебираем переданных родителей
+		foreach($yearsParents as $key => $val){
+			//Если текущий документ не принадлежит к переданному родителю, значит этот родитель лишний
+			if (!isset($allParents[$val])){
+				unset($yearsParents[$key]);
+			}
+		}
+		
+		//Если остался хоть один родитель (а остаться должен только один)
+		if (count($yearsParents) > 0){
+			//Сбрасываем ключи
+			$yearsParents = array_values($yearsParents);
+		//Если документ не относится ни к одному переданному родителю, то ничего делать не нужно
+		}else{
+			return;
+		}
 		
 		//Текущее правило
 		$rule = array();
@@ -91,7 +108,7 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParent = '', $date
 		$monthId = 0;
 		
 		//Получаем годы (непосредственных детей корневого родителя)
-		$years = ddTools::getDocumentChildrenTVarOutput($yearsParent, array('id'), false, 'menuindex', 'ASC', '', 'alias');
+		$years = ddTools::getDocumentChildrenTVarOutput($yearsParents[0], array('id'), false, 'menuindex', 'ASC', '', 'alias');
 		
 		if (isset($years[$ddDate['y']])){
 			//Получаем id нужного нам года
@@ -118,7 +135,7 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParent = '', $date
 			$yearId = ddTools::createDocument(array(
 				'pagetitle' => $ddDate['y'],
 				'alias' => $ddDate['y'],
-				'parent' => $yearsParent,
+				'parent' => $yearsParents[0],
 				'isfolder' => 1,
 				'template' => $yearTpl,
 				//Года запихиваем тупо в самый конец
