@@ -24,7 +24,7 @@
  */
 
 function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dateSource = 'pub_date', $yearTpl = 0, $monthTpl = 0, $yearPublished = '0', $monthPublished = '0', $numericMonth = false){
-	global $modx, $pub_date, $parent, $template, $tmplvars, $modx_lang_attribute;
+	global $modx, $pub_date, $parent, $mm_current_page, $tmplvars, $modx_lang_attribute;
 	$e = &$modx->Event;
 	
 	//$yearsParents is required
@@ -76,7 +76,7 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dat
 		//Если задано, откуда брать дату и это не дата публикации, пытаемся найти в tv`шках
 		if ($dateSource && $dateSource != 'pub_date'){
 			//Получаем tv с датой для данного шаблона
-			$dateTv = tplUseTvs($template, $dateSource);
+			$dateTv = tplUseTvs($mm_current_page['template'], $dateSource);
 			
 			//Если tv удалось получить, такая tv есть и есть её значение
 			if ($dateTv && $dateTv[0]['id'] && $tmplvars[$dateTv[0]['id']] && $tmplvars[$dateTv[0]['id']][1]){
