@@ -24,7 +24,7 @@
  */
 
 function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dateSource = 'pub_date', $yearTpl = 0, $monthTpl = 0, $yearPublished = '0', $monthPublished = '0', $numericMonth = false){
-	global $modx, $pub_date, $parent, $template, $document_groups, $tmplvars, $modx_lang_attribute;
+	global $modx, $pub_date, $parent, $template, $tmplvars, $modx_lang_attribute;
 	$e = &$modx->Event;
 	
 	//$yearsParents is required
@@ -119,8 +119,8 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dat
 			$ddDate['mTitle'] = date('F', $ddDate['date']);
 		}
 		
-		//Получаем список групп документов, к которым принадлежит текущий документ (пригодится при создании годов и месяцев)
-		$docGroups = preg_replace('/,\d*/', '', $document_groups);
+		//Получаем список групп документов родителя (пригодится при создании годов и месяцев)
+		$docGroups = $modx->db->getColumn('document_group', $modx->db->select('`document_group`', ddTools::$tables['document_groups'], '`document` = '.$yearsParents[0]));
 		
 		$yearId = 0;
 		$monthId = 0;
