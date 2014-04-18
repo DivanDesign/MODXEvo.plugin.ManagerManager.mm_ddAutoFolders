@@ -87,10 +87,6 @@ function mm_ddAutoFolders($roles = '', $templates = '', $yearsParents = '', $dat
 					//Пытаемся преобразовать в unix-время
 					$ddDate['date'] = strtotime($tmplvars[$dateTv[0]['id']][1]);
 				}
-				//Пытаемся преобразовать в unix-время
-				if (!is_numeric($tmplvars[$dateTv[0]['id']][1])){
-					$ddDate['date'] = strtotime($tmplvars[$dateTv[0]['id']][1]);
-				}
 			}
 		}else{
 			$ddDate['date'] = $pub_date;
