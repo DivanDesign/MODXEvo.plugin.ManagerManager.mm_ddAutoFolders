@@ -1,7 +1,7 @@
 <?php
 /**
  * mm_ddAutoFolders
- * @version 1.2 (2014-04-18)
+ * @version 1.3 (2016-11-15)
  * 
  * @desc Automatically move documents (OnBeforeDocFormSave event) based on their date (publication date; any date in tv) into folders of year and month (like 2012/02/). If folders (documents) of year and month doesn`t exist they are created automatically OnBeforeDocFormSave event.
  * 
@@ -19,7 +19,7 @@
  * @deprecated @param $params['yearData_published'] {0|1} — Note this is a deprecated parameter, please, use “$params['yearData']”. Whether the year documents should be published? Default: —.
  * @deprecated @param $params['monthData_published'] {0|1} — Note this is a deprecated parameter, please, use “$params['monthData']”. Whether the month documents should be published? Default: —.
  * 
- * @link http://code.divandesign.biz/modx/mm_ddautofolders/1.2
+ * @link http://code.divandesign.biz/modx/mm_ddautofolders/1.3
  * 
  * @copyright 2012–2016 DivanDesign {@link http://www.DivanDesign.biz }
  */
