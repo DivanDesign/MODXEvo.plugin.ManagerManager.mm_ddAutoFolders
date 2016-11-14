@@ -11,12 +11,12 @@
  * @param $roles {comma separated string} — List of role IDs this should be applied to. Leave empty (or omit) for all roles. Default: ''.
  * @param $templates {comma separated string} — List of template IDs this should be applied to. Leave empty (or omit) for all templates. Default: ''.
  * @param $yearsParents {comma separated string} — IDs of ultimate parents (parents of the years). @required
- * @param $dateSource {string} — Name of template variable which contains the date. Default: 'pub_date'.
- * @param $yearFields {string_JSON} — Document fields and/or TVs that are required to be assigned to year documents. An associative array in JSON where the keys and values correspond field names and values respectively. Default: '{"template":0,"published":0}'.
- * @param $monthFields {string_JSON} — Document fields and/or TVs that are required to be assigned to month documents. An associative array in JSON where the keys and values correspond field names and values respectively. Default: '{"template":0,"published":0}'.
- * @param $yearPublished {0|1} — Note this is a deprecated parameter, please, use “$yearFields”. Whether the year documents should be published? Default: —.
- * @param $monthPublished {0|1} — Note this is a deprecated parameter, please, use “$monthFields”. Whether the month documents should be published? Default: —.
- * @param $numericMonth {boolean} — Numeric aliases for month documents. Default: false.
+ * @param $dateSourceField {string} — Name of template variable which contains the date. Default: 'pub_date'.
+ * @param $yearData {string_JSON} — Document fields and/or TVs that are required to be assigned to year documents. An associative array in JSON where the keys and values correspond field names and values respectively. Default: '{"template":0,"published":0}'.
+ * @param $monthData {string_JSON} — Document fields and/or TVs that are required to be assigned to month documents. An associative array in JSON where the keys and values correspond field names and values respectively. Default: '{"template":0,"published":0}'.
+ * @param $yearData_published {0|1} — Note this is a deprecated parameter, please, use “$yearData”. Whether the year documents should be published? Default: —.
+ * @param $monthData_published {0|1} — Note this is a deprecated parameter, please, use “$monthData”. Whether the month documents should be published? Default: —.
+ * @param $numericMonthAliases {boolean} — Numeric aliases for month documents. Default: false.
  * 
  * @link http://code.divandesign.biz/modx/mm_ddautofolders/1.2
  * 
@@ -27,12 +27,12 @@ function mm_ddAutoFolders(
 	$roles = '',
 	$templates = '',
 	$yearsParents = '',
-	$dateSource = 'pub_date',
-	$yearFields = '{"template":0,"published":0}',
-	$monthFields = '{"template":0,"published":0}',
-	$yearPublished = NULL,
-	$monthPublished = NULL,
-	$numericMonth = false
+	$dateSourceField = 'pub_date',
+	$yearData = '{"template":0,"published":0}',
+	$monthData = '{"template":0,"published":0}',
+	$yearData_published = NULL,
+	$monthData_published = NULL,
+	$numericMonthAliases = false
 ){
 	global $modx, $pub_date, $parent, $mm_current_page, $tmplvars, $modx_lang_attribute;
 	$e = &$modx->Event;
@@ -94,11 +94,11 @@ function mm_ddAutoFolders(
 		
 		//Если задано, откуда брать дату и это не дата публикации, пытаемся найти в tv`шках
 		if (
-			$dateSource &&
-			$dateSource != 'pub_date'
+			$dateSourceField &&
+			$dateSourceField != 'pub_date'
 		){
 			//Получаем tv с датой для данного шаблона
-			$dateTv = tplUseTvs($mm_current_page['template'], $dateSource);
+			$dateTv = tplUseTvs($mm_current_page['template'], $dateSourceField);
 			
 			//Если tv удалось получить, такая tv есть и есть её значение
 			if (
@@ -126,7 +126,7 @@ function mm_ddAutoFolders(
 		//Год в формате 4 цифры
 		$ddDate['y'] = date('Y', $ddDate['date']);
 		//Псевдоним месяца (порядковый номер номер с ведущим нолём или название на английском)
-		$ddDate['m'] = $numericMonth ? date('m', $ddDate['date']) : strtolower(date('F', $ddDate['date']));
+		$ddDate['m'] = $numericMonthAliases ? date('m', $ddDate['date']) : strtolower(date('F', $ddDate['date']));
 		//Порядковый номер месяца
 		$ddDate['n'] = date('n', $ddDate['date']);
 		
@@ -169,23 +169,23 @@ function mm_ddAutoFolders(
 		}
 		
 		//For backward compatibility
-		if (is_numeric($yearFields)){$yearFields = '{"template":'.$yearFields.',"published":0}';}
-		if (is_numeric($monthFields)){$monthFields = '{"template":'.$monthFields.',"published":0}';}
+		if (is_numeric($yearData)){$yearData = '{"template":'.$yearData.',"published":0}';}
+		if (is_numeric($monthData)){$monthData = '{"template":'.$monthData.',"published":0}';}
 		
-		$yearFields = json_decode($yearFields, true);
-		$monthFields = json_decode($monthFields, true);
+		$yearData = json_decode($yearData, true);
+		$monthData = json_decode($monthData, true);
 		
-		if (!is_array($yearFields)){$yearFields = $defaultFields;}
-		if (!is_array($monthFields)){$monthFields = $defaultFields;}
+		if (!is_array($yearData)){$yearData = $defaultFields;}
+		if (!is_array($monthData)){$monthData = $defaultFields;}
 		
 		//For backward compatibility too
-		if ($yearPublished !== NULL){$yearFields['published'] = $yearPublished;}
-		if ($monthPublished !== NULL){$monthFields['published'] = $monthPublished;}
+		if ($yearData_published !== NULL){$yearData['published'] = $yearData_published;}
+		if ($monthData_published !== NULL){$monthData['published'] = $monthData_published;}
 		
 		//Если нужный год существует
 		if ($yearId != 0){
 			//Проставим году нужные параметры
-			ddTools::updateDocument($yearId, array_merge($yearFields, [
+			ddTools::updateDocument($yearId, array_merge($yearData, [
 				'isfolder' => 1
 			]));
 			//Получаем месяцы (непосредственных детей текущего года)
@@ -205,7 +205,7 @@ function mm_ddAutoFolders(
 		//Если нужный год не существует
 		}else{
 			//Создадим его
-			$yearId = ddTools::createDocument(array_merge($yearFields, [
+			$yearId = ddTools::createDocument(array_merge($yearData, [
 				'pagetitle' => $ddDate['y'],
 				'alias' => $ddDate['y'],
 				'parent' => $yearsParents[0],
@@ -218,12 +218,12 @@ function mm_ddAutoFolders(
 		//Если нужный месяц существует
 		if ($monthId != 0){
 			//Проставим месяцу нужные параметры
-			ddTools::updateDocument($monthId, array_merge($monthFields, [
+			ddTools::updateDocument($monthId, array_merge($monthData, [
 				'isfolder' => 1
 			]));
 			//Если нужный месяц не существует (на всякий случай проверим ещё и год)
 		}else if($yearId){
-			$monthId = ddTools::createDocument(array_merge($monthFields, [
+			$monthId = ddTools::createDocument(array_merge($monthData, [
 				'pagetitle' => $ddDate['mTitle'],
 				'alias' => $ddDate['m'],
 				'parent' => $yearId,
