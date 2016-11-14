@@ -5,6 +5,7 @@
  * 
  * @desc Automatically move documents (OnBeforeDocFormSave event) based on their date (publication date; any date in tv) into folders of year and month (like 2012/02/). If folders (documents) of year and month doesn`t exist they are created automatically OnBeforeDocFormSave event.
  * 
+ * @uses PHP >= 5.4.
  * @uses MODXEvo.plugin.ManagerManager >= 0.5.
  * 
  * @param $roles {comma separated string} — List of role IDs this should be applied to. Leave empty (or omit) for all roles. Default: ''.
@@ -42,10 +43,10 @@ function mm_ddAutoFolders(
 		$e->name == 'OnBeforeDocFormSave' &&
 		useThisRule($roles, $templates)
 	){
-		$defaultFields = array(
+		$defaultFields = [
 			'template' => 0,
 			'published' => 0
-		);
+		];
 		
 		//Функция аналогична методу «$modx->getParentIds» за исключением того, что родитель = 0 тоже выставляется
 		function getParentIds($id){
@@ -87,9 +88,9 @@ function mm_ddAutoFolders(
 		}
 		
 		//Текущее правило
-		$rule = array();
+		$rule = [];
 		//Дата
-		$ddDate = array();
+		$ddDate = [];
 		
 		//Если задано, откуда брать дату и это не дата публикации, пытаемся найти в tv`шках
 		if (
@@ -132,7 +133,7 @@ function mm_ddAutoFolders(
 		//Если язык админки — русский
 		if (strtolower($modx_lang_attribute) == 'ru'){
 			//Все месяцы на русском
-			$ruMonthes = array('Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь');
+			$ruMonthes = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 			
 			//Название месяца на русском
 			$ddDate['mTitle'] = $ruMonthes[$ddDate['n'] - 1];
@@ -154,7 +155,7 @@ function mm_ddAutoFolders(
 		//Получаем годы (непосредственных детей корневого родителя)
 		$years = ddTools::getDocumentChildrenTVarOutput(
 			$yearsParents[0],
-			array('id'),
+			['id'],
 			false,
 			'menuindex',
 			'ASC',
@@ -184,13 +185,13 @@ function mm_ddAutoFolders(
 		//Если нужный год существует
 		if ($yearId != 0){
 			//Проставим году нужные параметры
-			ddTools::updateDocument($yearId, array_merge($yearFields, array(
+			ddTools::updateDocument($yearId, array_merge($yearFields, [
 				'isfolder' => 1
-			)));
+			]));
 			//Получаем месяцы (непосредственных детей текущего года)
 			$months = ddTools::getDocumentChildrenTVarOutput(
 				$yearId,
-				array('id'),
+				['id'],
 				false,
 				'menuindex',
 				'ASC',
@@ -204,32 +205,32 @@ function mm_ddAutoFolders(
 		//Если нужный год не существует
 		}else{
 			//Создадим его
-			$yearId = ddTools::createDocument(array_merge($yearFields, array(
+			$yearId = ddTools::createDocument(array_merge($yearFields, [
 				'pagetitle' => $ddDate['y'],
 				'alias' => $ddDate['y'],
 				'parent' => $yearsParents[0],
 				'isfolder' => 1,
 				//Да пусть будут тупо по году, сортироваться нормально зато будут
 				'menuindex' => $ddDate['y'] - 2000
-			)), $docGroups);
+			]), $docGroups);
 		}
 		
 		//Если нужный месяц существует
 		if ($monthId != 0){
 			//Проставим месяцу нужные параметры
-			ddTools::updateDocument($monthId, array_merge($monthFields, array(
+			ddTools::updateDocument($monthId, array_merge($monthFields, [
 				'isfolder' => 1
-			)));
+			]));
 			//Если нужный месяц не существует (на всякий случай проверим ещё и год)
 		}else if($yearId){
-			$monthId = ddTools::createDocument(array_merge($monthFields, array(
+			$monthId = ddTools::createDocument(array_merge($monthFields, [
 				'pagetitle' => $ddDate['mTitle'],
 				'alias' => $ddDate['m'],
 				'parent' => $yearId,
 				'isfolder' => 1,
 				//Для месяца выставляем menuindex в соответствии с его порядковым номером
 				'menuindex' => $ddDate['n'] - 1
-			)), $docGroups);
+			]), $docGroups);
 		}
 		
 		//Ещё раз на всякий случай проверим, что с месяцем всё хорошо
