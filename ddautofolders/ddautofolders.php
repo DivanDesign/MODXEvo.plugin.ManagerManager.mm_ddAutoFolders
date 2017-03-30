@@ -89,7 +89,8 @@ function mm_ddAutoFolders($params){
 				$parents[$parents[$id]] = 0;
 			}
 			
-			return $parents;
+			//Вернем массив со значениями и ключами в нём
+			return array_merge($parents, array_keys($parents));
 		}
 		
 		//Получаем всех родителей текущего документа (или его родителя, если это новый документ)
@@ -100,7 +101,7 @@ function mm_ddAutoFolders($params){
 		//Перебираем переданных родителей
 		foreach($params->yearsParents as $key => $val){
 			//Если текущий документ не принадлежит к переданному родителю, значит этот родитель лишний
-			if (!isset($allParents[$val])){
+			if (!in_array($val, $allParents)){
 				unset($params->yearsParents[$key]);
 			}
 		}
